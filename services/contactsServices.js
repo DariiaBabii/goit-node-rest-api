@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { nanoid } from "nanoid";
 
-const contactsPath = path.join(process.cwd(), "contacts.json");
+const contactsPath = path.join(process.cwd(), "db", "contacts.json");
 
 async function listContacts() {
   try {
@@ -10,7 +10,7 @@ async function listContacts() {
     return JSON.parse(data);
   } catch (error) {
     console.error("Error reading contacts file:", error);
-    return [];
+    throw new Error("Unable to read contacts data.");
   }
 }
 
@@ -29,11 +29,31 @@ async function removeContact(contactId) {
   return removedContact;
 }
 
-async function addContact(name, email, phone) {
+async function addContact(contactData) {
   const contacts = await listContacts();
-  const newContact = { id: nanoid(), name, email, phone };
+  const newContact = { id: nanoid(), ...contactData };
   contacts.push(newContact);
   await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
   return newContact;
 }
-export { listContacts, getContactById, removeContact, addContact };
+
+async function updateContactInService(contactId, updatedData) {
+  const contacts = await listContacts();
+  const contactIndex = contacts.findIndex(
+    (contact) => contact.id === contactId
+  );
+
+  if (contactIndex === -1) return null;
+
+  contacts[contactIndex] = { ...contacts[contactIndex], ...updatedData };
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  return contacts[contactIndex];
+}
+
+export {
+  listContacts,
+  getContactById,
+  removeContact,
+  addContact,
+  updateContactInService,
+};

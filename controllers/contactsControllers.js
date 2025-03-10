@@ -3,70 +3,102 @@ import {
   getContactById,
   removeContact,
   addContact,
+  updateContactInService,
 } from "../services/contactsServices.js";
+import HttpError from "../helpers/HttpError.js";
+import validateBody from "../helpers/validateBody.js";
+import {
+  createContactSchema,
+  updateContactSchema,
+} from "../schemas/contactsSchemas.js";
 
-export const getAllContacts = async (req, res) => {
+// GET /api/contacts
+async function getAllContacts(req, res) {
   try {
-    const contacts = await contactsService.listContacts();
-    res.json(contacts);
+    const contacts = await listContacts();
+    res.status(200).json(contacts);
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve contacts" });
+    res.status(500).json({ message: "Server error" });
   }
-};
+}
 
-export const getOneContact = async (req, res) => {
+// GET /api/contacts/:id
+async function getOneContact(req, res) {
+  const { id } = req.params;
   try {
-    const { contactId } = req.params;
-    const contact = await contactsService.getContactById(contactId);
-
+    const contact = await getContactById(id);
     if (!contact) {
-      return res.status(404).json({ message: "Contact not found" });
+      throw HttpError(404, "Not found");
     }
-
-    res.json(contact);
+    res.status(200).json(contact);
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve contact" });
+    res.status(error.status || 500).json({ message: error.message });
   }
-};
+}
 
-export const deleteContact = async (req, res) => {
+// DELETE /api/contacts/:id
+async function deleteContact(req, res) {
+  const { id } = req.params;
   try {
-    const { contactId } = req.params;
-    const deletedContact = await contactsService.removeContact(contactId);
-
-    if (!deletedContact) {
-      return res.status(404).json({ message: "Contact not found" });
+    const removedContact = await removeContact(id);
+    if (!removedContact) {
+      throw HttpError(404, "Not found");
     }
-
-    res.json({ message: "Contact deleted successfully" });
+    res.status(200).json(removedContact);
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete contact" });
+    res.status(error.status || 500).json({ message: error.message });
   }
-};
+}
 
-export const createContact = async (req, res) => {
+// POST /api/contacts
+async function createContact(req, res) {
   try {
-    const newContact = await contactsService.addContact(req.body);
+    const { error } = createContactSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+    const newContact = await addContact(req.body);
     res.status(201).json(newContact);
   } catch (error) {
-    res.status(500).json({ message: "Failed to create contact" });
+    res.status(error.status || 500).json({ message: error.message });
   }
-};
+}
 
-export const updateContact = async (req, res) => {
+// PUT /api/contacts/:id
+async function updateContact(req, res) {
+  const { id } = req.params;
+  const { error } = updateContactSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.message });
+  }
+
+  const { name, email, phone } = req.body;
+
+  if (!name && !email && !phone) {
+    return res
+      .status(400)
+      .json({ message: "Body must have at least one field" });
+  }
+
   try {
-    const { contactId } = req.params;
-    const updateContact = await contactsService.updateContact(
-      contactId,
-      req.body
-    );
-
-    if (!updateContact) {
-      return res.status(404).json({ message: "Contact not found" });
+    const updatedContact = await updateContactInService(id, {
+      name,
+      email,
+      phone,
+    });
+    if (!updatedContact) {
+      throw HttpError(404, "Not found");
     }
-
-    res.json(updateContact);
+    res.status(200).json(updatedContact);
   } catch (error) {
-    res.status(500).json({ message: "Failed to update contact" });
+    res.status(error.status || 500).json({ message: error.message });
   }
+}
+
+export {
+  getAllContacts,
+  getOneContact,
+  deleteContact,
+  createContact,
+  updateContact,
 };
