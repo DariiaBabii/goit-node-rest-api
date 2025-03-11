@@ -16,9 +16,11 @@ app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-app.use((err, req, res, next) => {
-  const { status = 500, message = "Server error" } = err;
-  res.status(status).json({ message });
+app.use((error, req, res, next) => {
+  console.error(error);
+  res
+    .status(error.status || 500)
+    .json({ message: error.message || "Internal Server Error" });
 });
 
 app.listen(3000, () => {
