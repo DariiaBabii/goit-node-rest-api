@@ -1,35 +1,71 @@
 import Contact from "../models/contactsModel.js";
 
-export const listContacts = async () => {
+async function listContacts() {
   return await Contact.findAll();
-};
+}
 
-export const getContactById = async (id) => {
-  console.log("Looking for contact with id:", id);
-  return await Contact.findByPk(id);
-};
-
-export const removeContact = async (id) => {
-  const contact = await Contact.findByPk(id);
-  if (!contact) return null;
-  await contact.destroy();
+async function getContactById(contactId) {
+  const contact = await Contact.findByPk(contactId);
+  console.log(`Found contact with ID ${contactId}:`, contact);
   return contact;
-};
+}
 
-export const addContact = async (data) => {
-  return await Contact.create(data);
-};
+async function addContact(name, email, phone) {
+  return await Contact.create({ name, email, phone });
+}
 
-export const updateContactInService = async (id, data) => {
-  const contact = await Contact.findByPk(id);
+const updateContact = async (contactId, data) => {
+  const contact = await Contact.findByPk(contactId);
   if (!contact) return null;
   return await contact.update(data);
 };
 
-export const updateStatusContact = async (id, { favorite }) => {
-  const contact = await Contact.findByPk(id);
+const updateStatusContact = async (contactId, data) => {
+  const contact = await Contact.findByPk(contactId);
+
+  if (!contact) {
+    console.log(`Contact with ID ${contactId} not found`);
+    return null;
+  }
+
+  if (contact.favorite === true && data.favorite === true) {
+    console.log(`Contact ${contactId} is already added to favorites`);
+    return contact;
+  }
+
+  if (contact.favorite === true && data.favorite === false) {
+    const updatedContact = await contact.update({ favorite: data.favorite });
+
+    console.log(
+      `Contact ${contactId} favorite status updated to: ${updatedContact.favorite}`
+    );
+
+    return updatedContact;
+  }
+
+  if (contact.favorite === false && data.favorite === true) {
+    const updatedContact = await contact.update({ favorite: data.favorite });
+
+    console.log(
+      `Contact ${contactId} favorite status updated to: ${updatedContact.favorite}`
+    );
+
+    return updatedContact;
+  }
+};
+
+async function removeContact(contactId) {
+  const contact = await Contact.findByPk(contactId);
   if (!contact) return null;
-  contact.favorite = favorite;
-  await contact.save();
+  await contact.destroy();
   return contact;
+}
+
+export default {
+  listContacts,
+  getContactById,
+  addContact,
+  updateContact,
+  updateStatusContact,
+  removeContact,
 };
