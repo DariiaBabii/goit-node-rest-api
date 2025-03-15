@@ -1,6 +1,5 @@
-import * as contactsService from "../services/contactsServices.js";
+import contactsService from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
-import Contact from "../models/contactsModel.js";
 
 // GET /api/contacts
 export const getAllContacts = async (req, res, next) => {
@@ -39,7 +38,11 @@ export const deleteContact = async (req, res, next) => {
 // POST /api/contacts
 export const createContact = async (req, res, next) => {
   try {
-    const newContact = await contactsService.addContact(req.body);
+    const { name, email, phone } = req.body;
+    if (!name || !email || !phone) {
+      throw HttpError(400, "Missing required fields");
+    }
+    const newContact = await contactsService.addContact(name, email, phone);
     res.status(201).json(newContact);
   } catch (error) {
     next(error);
@@ -58,6 +61,7 @@ export const updateContact = async (req, res, next) => {
   }
 };
 
+// PATCH /api/contacts/:id/favorite
 export const updateStatusContact = async (req, res, next) => {
   try {
     const { id } = req.params;
