@@ -14,7 +14,7 @@ This project implements a REST API for managing contacts using PostgreSQL with S
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/yourusername/goit-node-rest-api.git
+git clone https://github.com/DariiaBabii/goit-node-rest-api.git
 cd goit-node-rest-api
 ```
 ### 2. Install dependencies:
