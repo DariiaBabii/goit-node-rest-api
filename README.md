@@ -1,13 +1,22 @@
-# REST API - PostgreSQL Integration
-This project implements a REST API for managing contacts using PostgreSQL with Sequelize ORM.
+# REST API - File-Based Contacts Management
 
-## CRUD Operations (Sequelize)
-- Replaces file-based operations with Sequelize methods:
-  - **`listContacts`**: Get all contacts.
-  - **`getContactById`**: Get a contact by ID.
-  - **`removeContact`**: Delete a contact.
-  - **`addContact`**: Add a new contact.
-  - **`updateContact`**: Update an existing contact.
+This project implements a basic file-based contacts management system, using Node.js. It supports creating, listing, retrieving, updating, and deleting contacts from a JSON file.
+
+## Features
+
+### 1. File Handling
+- Uses **`fs/promises`** for asynchronous file system operations.
+- Uses **`path`** module to correctly manage file paths.
+
+### 2. CRUD Operations (File-based)
+- Replaces database operations with file-based CRUD:
+  - **`listContacts`**: Retrieves all contacts from the file.
+  - **`getContactById`**: Retrieves a contact by ID.
+  - **`removeContact`**: Deletes a contact by ID.
+  - **`addContact`**: Adds a new contact to the file.
+
+### 3. Function `invokeAction`
+- Uses **`invokeAction()`** to trigger CRUD operations based on the user’s input.
 
 ## Installation
 
@@ -17,15 +26,11 @@ This project implements a REST API for managing contacts using PostgreSQL with S
 git clone https://github.com/DariiaBabii/goit-node-rest-api.git
 cd goit-node-rest-api
 ```
-### 2. Install dependencies:
-
+### 2. Install dependencies
 ```bash
 npm install
 ```
-
-### 3. Set up PostgreSQL and update .env file with credentials.
-
-### 4. Start the app:
+### 3. Start the app
 ```bash
 npm start
 ```
