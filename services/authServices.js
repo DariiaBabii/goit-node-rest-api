@@ -39,4 +39,14 @@ async function updateUserToken(userId, token) {
   return user;
 }
 
-export default { registerUser, getUser, getUserById, updateUserToken };
+async function updateUserAvatar(userId, avatarURL) {
+  return await User.update({ avatarURL }, { where: { id: userId } });
+}
+
+export default {
+  registerUser,
+  getUser,
+  getUserById,
+  updateUserToken,
+  updateUserAvatar,
+};

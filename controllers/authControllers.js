@@ -4,10 +4,15 @@ import User from "../models/contactsUser.js";
 import authService from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
 import dotenv from "dotenv";
+import gravatar from "gravatar";
+import path from "node:path";
+import fs from "node:fs/promises";
+import { Jimp } from "jimp";
 
 dotenv.config();
-
 const { SECRET_KEY } = process.env;
+
+const avatarsDir = path.resolve("public/avatars");
 
 export const registerNewUser = async (req, res, next) => {
   try {
@@ -19,12 +24,18 @@ export const registerNewUser = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await authService.registerUser(email, hashedPassword);
+    const avatarURL = await gravatar.url(email, { s: "250", d: "retro" }, true);
+    const newUser = await authService.registerUser(
+      email,
+      hashedPassword,
+      avatarURL
+    );
 
     return res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -89,4 +100,20 @@ export const getCurrentUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const updateAvatar = async (req, res) => {
+  if (!req.file) {
+    throw HttpError(400, "No file uploaded");
+  }
+
+  const { path: tempPath, filename } = req.file;
+  const avatarName = `${req.user.id}-${Date.now()}${path.extname(filename)}`;
+  const avatarPath = path.join(avatarsDir, avatarName);
+
+  await fs.rename(tempPath, avatarPath);
+  const avatarURL = `/avatars/${avatarName}`;
+  await authService.updateUserAvatar(req.user.id, avatarURL);
+
+  res.json({ avatarURL });
 };
