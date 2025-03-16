@@ -25,6 +25,13 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     defaultValue: null,
   },
+  verify: {
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  },
+  verificationToken: {
+    type: DataType.STRING,
+  },
 });
 
 export default User;

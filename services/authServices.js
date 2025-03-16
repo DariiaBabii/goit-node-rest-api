@@ -43,6 +43,42 @@ async function updateUserAvatar(userId, avatarURL) {
   return await User.update({ avatarURL }, { where: { id: userId } });
 }
 
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw HttpError(400, "missing required field email");
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    if (user.verify) {
+      throw HttpError(400, "Verification has already been passed");
+    }
+
+    const verificationToken = nanoid();
+    await user.update({ verificationToken });
+
+    const verificationLink = `${process.env.BASE_URL}/auth/verify/${verificationToken}`;
+    await transporter.sendMail({
+      to: email,
+      subject: "Email Verification",
+      html: `<p>Click <a href="${verificationLink}">here</a> to verify your email address.</p>`,
+    });
+
+    return res.status(200).json({
+      message: "Verification email sent",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   registerUser,
   getUser,

@@ -8,12 +8,13 @@ import gravatar from "gravatar";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { Jimp } from "jimp";
+import { nanoid } from "nanoid";
+import sendVerificationEmail from "../services/emailService";
 
 dotenv.config();
 const { SECRET_KEY } = process.env;
 
 const avatarsDir = path.resolve("public/avatars");
-
 export const registerNewUser = async (req, res, next) => {
   try {
     const { email, password, subscription = "starter" } = req.body;
@@ -25,11 +26,15 @@ export const registerNewUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const avatarURL = await gravatar.url(email, { s: "250", d: "retro" }, true);
+    const verificationToken = nanoid();
     const newUser = await authService.registerUser(
       email,
       hashedPassword,
-      avatarURL
+      avatarURL,
+      verificationToken
     );
+
+    await sendVerificationEmail(email, verificationToken);
 
     return res.status(201).json({
       user: {
@@ -116,4 +121,56 @@ export const updateAvatar = async (req, res) => {
   await authService.updateUserAvatar(req.user.id, avatarURL);
 
   res.json({ avatarURL });
+};
+
+export const verifyUser = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+
+    const user = await User.findOne({ where: { verificationToken } });
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    user.verify = true;
+    user.verificationToken = null;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerify = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw HttpError(400, "missing required field email");
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      throw HttpError(404, "User not found");
+    }
+
+    if (user.verify) {
+      throw HttpError(400, "Verification has already been passed");
+    }
+
+    const verificationToken = nanoid();
+    user.verificationToken = verificationToken;
+    await user.save();
+
+    await sendVerificationEmail(email, verificationToken);
+
+    return res.status(200).json({
+      message: "Verification email sent",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
