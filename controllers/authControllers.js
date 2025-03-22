@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/contactsUser.js";
+import User from "../models/User.js";
 import authService from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
 import dotenv from "dotenv";
