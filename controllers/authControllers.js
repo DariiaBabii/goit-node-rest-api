@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/contactsUser.js";
+import User from "../models/User.js";
 import authService from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
 import dotenv from "dotenv";
@@ -9,7 +9,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { Jimp } from "jimp";
 import { nanoid } from "nanoid";
-import sendVerificationEmail from "../services/emailService";
+import sendVerificationEmail from "../helpers/emailService.js";
 
 dotenv.config();
 const { SECRET_KEY } = process.env;

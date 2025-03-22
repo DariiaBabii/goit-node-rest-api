@@ -26,11 +26,11 @@ const User = sequelize.define("User", {
     defaultValue: null,
   },
   verify: {
-    type: DataType.BOOLEAN,
+    type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
   verificationToken: {
-    type: DataType.STRING,
+    type: DataTypes.STRING,
   },
 });
 
