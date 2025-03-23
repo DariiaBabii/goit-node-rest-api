@@ -1,11 +1,14 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import "dotenv/config";
 
 import contactsRouter from "./routes/contactsRouter.js";
 import authRouter from "./routes/authRouter.js";
 
 const app = express();
+
+console.log(process.env.DOMAIN);
 
 app.use(morgan("tiny"));
 app.use(cors());
